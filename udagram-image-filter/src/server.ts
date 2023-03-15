@@ -1,30 +1,18 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { getUriFromRequest } from './util/util';
-import IndexRouter from './controllers/v0/index.router';
 import { PORT } from "./util/constants";
+import {filteredImageGETHandler} from "./controllers/filteredimage/service";
 
 (async () => {
 
   const app = express();
   app.use(bodyParser.json());
 
-  app.use('/api/v0', IndexRouter);
 
-  app.get( "/api/v0", async ( req, res ) => {
-    res.send({
-      routes: [
-        getUriFromRequest(req, '/filteredimage')
-      ],
-    })
-  });
+  app.get( "/filteredimage", filteredImageGETHandler);
 
   app.get( "/", async ( req, res ) => {
-    res.send({
-      routes: [
-        getUriFromRequest(req, 'api/v0')
-      ],
-    })
+    res.sendStatus(404);
   } );
 
   // Start the Server
