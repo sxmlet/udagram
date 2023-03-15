@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "lint": "tslint --project .",
     "start": "node server.js",
     "tsc": "tsc",
     "start-db": "docker-compose up -d",
@@ -42,6 +43,7 @@
     "@types/validator": "^10.11.3",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
+    "codelyzer": "^6.0.2",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "ts-node-dev": "^2.0.0",

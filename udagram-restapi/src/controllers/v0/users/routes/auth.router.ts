@@ -1,11 +1,8 @@
 import { Router, Request, Response } from 'express';
-
 import { User } from '../models/User';
-
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { NextFunction } from 'connect';
-
 import * as EmailValidator from 'email-validator';
 import { config } from '../../../../config/config';
 
@@ -18,7 +15,7 @@ async function generatePassword(plainTextPassword: string): Promise<string> {
 }
 
 async function comparePasswords(plainTextPassword: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(plainTextPassword, hash)
+    return bcrypt.compare(plainTextPassword, hash);
 }
 
 function generateJWT(user: User): string {
@@ -26,16 +23,15 @@ function generateJWT(user: User): string {
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-    if (!req.headers || !req.headers.authorization){
+    if (!req.headers || !req.headers.authorization) {
         return res.status(401).send({ message: 'No authorization headers.' });
     }
 
     const token_bearer = req.headers.authorization.split(' ');
-    console.log(req.headers.authorization);
-    if(token_bearer.length != 2){
+
+    if (token_bearer.length !== 2) {
         return res.status(401).send({ message: 'Malformed token.' });
     }
-    
     const token = token_bearer[1];
 
     return jwt.verify(token, config.jwt.secret, (err, decoded) => {
@@ -46,8 +42,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     });
 }
 
-router.get('/verification', 
-    requireAuth, 
+router.get('/verification',
+    requireAuth,
     async (req: Request, res: Response) => {
         return res.status(200).send({ auth: true, message: 'Authenticated.' });
 });
@@ -67,24 +63,24 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const user = await User.findByPk(email);
     // check that user exists
-    if(!user) {
+    if (!user) {
         return res.status(401).send({ auth: false, message: 'Unauthorized' });
     }
 
     // check that the password matches
-    const authValid = await comparePasswords(password, user.password_hash)
+    const authValid = await comparePasswords(password, user.password_hash);
 
-    if(!authValid) {
+    if (!authValid) {
         return res.status(401).send({ auth: false, message: 'Unauthorized' });
     }
 
     // Generate JWT
-    const jwt = generateJWT(user);
+    const token = generateJWT(user);
 
-    res.status(200).send({ auth: true, token: jwt, user: user.short()});
+    res.status(200).send({ auth: true, token: token, user: user.short()});
 });
 
-//register a new user
+// Register a new user.
 // Required: email, password
 router.post('/', async (req: Request, res: Response) => {
     const email = req.body.email;
@@ -102,7 +98,7 @@ router.post('/', async (req: Request, res: Response) => {
     // find the user
     const user = await User.findByPk(email);
     // check that user doesnt exists
-    if(user) {
+    if (user) {
         return res.status(422).send({ auth: false, message: 'User may already exist' });
     }
 
@@ -121,13 +117,13 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Generate JWT
-    const jwt = generateJWT(savedUser);
+    const token = generateJWT(savedUser);
 
-    res.status(201).send({token: jwt, user: savedUser.short()});
+    res.status(201).send({token: token, user: savedUser.short()});
 });
 
 router.get('/', async (req: Request, res: Response) => {
-    res.send('auth')
+    res.send('auth');
 });
 
 export const AuthRouter: Router = router;
