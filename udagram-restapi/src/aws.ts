@@ -1,13 +1,12 @@
 import {GetObjectCommand, PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
-import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
+import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 import {config} from './config/config';
-import {query} from "express";
 
 const c = config.dev;
 
-//Configure AWS S3 client
+// Configure AWS S3 client.
 let s3: S3Client;
-if (c.aws_profile !== "DEPLOYED") {
+if (c.aws_profile !== 'DEPLOYED') {
   s3 = new S3Client({
     credentials: {
       accessKeyId: process.env.MINIO_ACCESS_KEY,
@@ -30,7 +29,7 @@ export { s3 };
  */
 export async function getGetSignedUrl(key: string): Promise<string> {
 
-  const signedUrlExpireSeconds = 60 * 5
+  const signedUrlExpireSeconds = 60 * 5;
 
   return await getSignedUrl(s3,
     new GetObjectCommand({
