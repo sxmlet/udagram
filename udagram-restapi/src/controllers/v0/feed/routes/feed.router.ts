@@ -3,33 +3,41 @@ import {FeedItem} from '../models/FeedItem';
 import {requireAuth} from '../../users/routes/auth.router';
 import * as AWS from '../../../../aws';
 import Bluebird from 'bluebird';
-import { ErrorWithCode } from '../../../../libs/errors';
+import {ErrorWithCode} from '../../../../libs/errors';
 
 
 const router: Router = Router();
 
 const findById = async (req: Request): Promise<Bluebird<FeedItem>> => {
-    const { id } = req.params;
-    if (isNaN(Number(id))) {
-        throw new ErrorWithCode('id is not a number', 400);
-    }
+  const {id} = req.params;
+  if (isNaN(Number(id))) {
+    throw new ErrorWithCode('id is not a number', 400);
+  }
 
-    const item = await FeedItem.findByPk(id);
-    if (!item) {
-        throw new ErrorWithCode('resource not found', 404);
-    }
-    return item;
+  const item = await FeedItem.findByPk(id);
+  if (!item) {
+    throw new ErrorWithCode('resource not found', 404);
+  }
+  return item;
 };
 
 // Get all feed items.
 router.get('/', async (req: Request, res: Response) => {
-  const items = await FeedItem.findAndCountAll({order: [['id', 'DESC']]});
-  items.rows.map(async (item) => {
+  const all = await FeedItem.findAndCountAll({order: [['id', 'DESC']]});
+  const items: Promise<FeedItem>[] = [];
+  all.rows.map(item => {
     if (item.url) {
-      item.url = await AWS.getGetSignedUrl(item.url);
+      items.push(AWS.getGetSignedUrl(item.url).then(url => {
+        item.url = url;
+        return item;
+      }));
     }
   });
-  return res.send(items);
+  // Merge back rows and return the resolved promises in the response.
+  Promise.all(items).then(rows => {
+    all.rows = rows;
+    res.send(all);
+  });
 });
 
 // Get a feed item.
@@ -49,7 +57,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.patch('/:id',
   requireAuth,
   async (req: Request, res: Response) => {
-    const { caption } = req.body;
+    const {caption} = req.body;
     try {
       const item = await findById(req);
       item.caption = caption;
@@ -69,7 +77,7 @@ router.patch('/:id',
 router.get('/signed-url/:fileName',
   requireAuth,
   async (req: Request, res: Response) => {
-    const { fileName } = req.params;
+    const {fileName} = req.params;
     const url = await AWS.getPutSignedUrl(fileName);
     return res.status(201).send({url: url});
   });

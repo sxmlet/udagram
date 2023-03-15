@@ -15,7 +15,7 @@ export const config = {
     'aws_media_bucket': 'udagram',
   },
   'jwt': {
-    'secret': ' '
+    'secret': process.env.JWT_SECRET,
   },
   'prod': {
     'username': process.env.POSTGRES_USER,
