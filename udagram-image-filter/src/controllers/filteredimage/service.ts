@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
 import validUrl from "valid-url";
-import axios, {AxiosResponse} from "axios";
+import axios, {AxiosError, AxiosResponse} from "axios";
 
 import {newResponseError} from "../../util/errors";
 import {deleteLocalFiles, filterImageFromBuffer} from "./domain";
@@ -8,7 +8,7 @@ import {deleteLocalFiles, filterImageFromBuffer} from "./domain";
 
 // GET handler for /filteredimage endpoint.
 export const filteredImageGETHandler = async (req: Request, resp: Response) => {
-  const imageUrl = req.query.image_url;
+  const imageUrl = req.query.image_url as string;
   if (!imageUrl) {
     return resp.status(400).send(newResponseError('image_url query param must be specified', 1));
   }
@@ -19,12 +19,11 @@ export const filteredImageGETHandler = async (req: Request, resp: Response) => {
 
   let res: AxiosResponse;
   try {
-    res = await axios({
+    res = await axios(imageUrl, {
       method: 'get',
-      url: imageUrl,
       responseType: 'arraybuffer',
     });
-  } catch (err) {
+  } catch (err: any) {
     const status = err.response.status;
     if (status === 404) {
       return resp.status(400).send(newResponseError('provided resource is not found', 3));
