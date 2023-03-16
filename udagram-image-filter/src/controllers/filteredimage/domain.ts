@@ -1,17 +1,17 @@
 import fs from "fs";
 import Jimp from "jimp";
 
-// filterImageFromURL
-// Helper function to download, filter, and save the filtered image locally
+// filterImageFromBuffer
+// Helper function to filter, and save the filtered image locally
 // returns the absolute path to the local image
 // INPUTS
-//    inputURL: string - a publicly accessible url to an image file
+//    inputBuffer: Buffer - the image buffer to transform
 // RETURNS
 //    an absolute path to a filtered image locally saved file
-export async function filterImageFromBuffer(inputURL: Buffer): Promise<string> {
+export async function filterImageFromBuffer(inputBuffer: Buffer): Promise<string> {
     return new Promise(async (resolve, reject) => {
         try {
-            const photo = await Jimp.read(inputURL);
+            const photo = await Jimp.read(inputBuffer);
             const outpath =
                 "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
             await photo
