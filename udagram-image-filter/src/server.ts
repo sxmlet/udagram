@@ -12,7 +12,11 @@ import {filteredImageGETHandler} from "./controllers/filteredimage/service";
   app.get( "/filteredimage", filteredImageGETHandler);
 
   app.get( "/", async ( req, res ) => {
-    res.sendStatus(404);
+    res.status(200).send({
+      routes: [
+        '/filteredimage'
+      ],
+    });
   } );
 
   // Start the Server
